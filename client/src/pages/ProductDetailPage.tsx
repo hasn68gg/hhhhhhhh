@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -32,7 +31,6 @@ export default function ProductDetailClient({
   related,
   locale,
 }: ProductDetailClientProps) {
-  const t = useTranslations('products');
   const isRTL = locale === 'ar';
   const { data: session } = useSession();
   const addToCart = useCartStore((s) => s.addItem);
