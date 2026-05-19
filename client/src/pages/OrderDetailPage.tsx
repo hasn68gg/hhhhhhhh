@@ -36,8 +36,10 @@ export default function OrderDetailPage() {
         <Navbar />
         <main className="container mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground mb-4">{locale === 'ar' ? 'يرجى تسجيل الدخول أولاً' : 'Please login first'}</p>
-          <button onClick={() => navigate('/auth/login')}
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all">
+          <button
+            onClick={() => navigate('/auth/login')}
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all"
+          >
             {locale === 'ar' ? 'تسجيل الدخول' : 'Login'}
           </button>
         </main>
@@ -54,15 +56,19 @@ export default function OrderDetailPage() {
     <div className="min-h-screen">
       <Navbar />
       <main className="container mx-auto px-4 py-10 max-w-3xl">
-        <button onClick={() => navigate('/orders')}
-          className={`flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+        <button
+          onClick={() => navigate('/orders')}
+          className={`flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors ${locale === 'ar' ? 'flex-row-reverse' : ''}`}
+        >
           <ArrowLeft className={`w-4 h-4 ${locale === 'ar' ? 'rotate-180' : ''}`} />
           {locale === 'ar' ? 'العودة للطلبات' : 'Back to Orders'}
         </button>
 
         {isLoading ? (
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-muted rounded-2xl animate-pulse" />)}
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-24 bg-muted rounded-2xl animate-pulse" />
+            ))}
           </div>
         ) : error || !order ? (
           <div className="bg-card border border-border rounded-2xl p-12 text-center">
@@ -130,13 +136,17 @@ export default function OrderDetailPage() {
               <div className="space-y-3">
                 {(order.items || []).map((item: any) => {
                   const product = item.products || item.product;
-                  const price = item.order_items?.price ?? item.price ?? item.unitPrice ?? 0;
-                  const qty = item.order_items?.quantity ?? item.quantity ?? 1;
+                  const price = Number(item.order_items?.price ?? item.price ?? item.unitPrice ?? 0);
+                  const qty = Number(item.order_items?.quantity ?? item.quantity ?? 1);
+
                   const nameAr = product?.nameAr || product?.name_ar || item.productNameAr || '';
                   const nameEn = product?.nameEn || product?.name_en || item.productNameEn || '';
-                  const thumbnail = product?.thumbnail;
+
+                  const images: string[] = Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
+                  const thumbnail = images[0] || product?.thumbnail || '';
+
                   return (
-                    <div key={item.order_items?.id || item.id} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
+                    <div key={item.order_items?.id || item.id} className="flex items-start gap-3 py-3 border-b border-border last:border-0">
                       {thumbnail ? (
                         <img src={thumbnail} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
                       ) : (
@@ -144,13 +154,33 @@ export default function OrderDetailPage() {
                           <Package className="w-6 h-6 text-muted-foreground/40" />
                         </div>
                       )}
+
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm line-clamp-1">
                           {locale === 'ar' ? nameAr : nameEn}
                         </p>
-                        <p className="text-xs text-muted-foreground">{locale === 'ar' ? `الكمية: ${qty}` : `Qty: ${qty}`}</p>
+
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {locale === 'ar' ? `الكمية: ${qty}` : `Qty: ${qty}`}
+                        </p>
+
+                        {images.length > 1 && (
+                          <div className="mt-2 flex gap-2 flex-wrap">
+                            {images.slice(0, 5).map((src, i) => (
+                              <img
+                                key={i}
+                                src={src}
+                                alt=""
+                                className="w-10 h-10 rounded-lg object-cover border border-border"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <p className="font-bold text-primary flex-shrink-0">{formatPrice(price * qty)}</p>
+
+                      <p className="font-bold text-primary flex-shrink-0 whitespace-nowrap">
+                        {formatPrice(price * qty)}
+                      </p>
                     </div>
                   );
                 })}
@@ -164,16 +194,28 @@ export default function OrderDetailPage() {
               </h2>
               <div className="grid sm:grid-cols-2 gap-2 text-sm">
                 {(order as any).fullName && (
-                  <div><span className="text-muted-foreground">{locale === 'ar' ? 'الاسم: ' : 'Name: '}</span><span className="font-medium">{(order as any).fullName}</span></div>
+                  <div>
+                    <span className="text-muted-foreground">{locale === 'ar' ? 'الاسم: ' : 'Name: '}</span>
+                    <span className="font-medium">{(order as any).fullName}</span>
+                  </div>
                 )}
                 {(order as any).phone && (
-                  <div><span className="text-muted-foreground">{locale === 'ar' ? 'واتساب: ' : 'WhatsApp: '}</span><span className="font-medium">{(order as any).phone}</span></div>
+                  <div>
+                    <span className="text-muted-foreground">{locale === 'ar' ? 'واتساب: ' : 'WhatsApp: '}</span>
+                    <span className="font-medium">{(order as any).phone}</span>
+                  </div>
                 )}
                 {(order as any).address && (
-                  <div><span className="text-muted-foreground">{locale === 'ar' ? 'المحافظة: ' : 'Governorate: '}</span><span className="font-medium">{(order as any).address}</span></div>
+                  <div>
+                    <span className="text-muted-foreground">{locale === 'ar' ? 'المحافظة: ' : 'Governorate: '}</span>
+                    <span className="font-medium">{(order as any).address}</span>
+                  </div>
                 )}
                 {(order as any).shippingBranch && (
-                  <div><span className="text-muted-foreground">{locale === 'ar' ? 'فرع الشحن: ' : 'Shipping Branch: '}</span><span className="font-medium">{(order as any).shippingBranch}</span></div>
+                  <div>
+                    <span className="text-muted-foreground">{locale === 'ar' ? 'فرع الشحن: ' : 'Shipping Branch: '}</span>
+                    <span className="font-medium">{(order as any).shippingBranch}</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -186,17 +228,23 @@ export default function OrderDetailPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>{locale === 'ar' ? 'طريقة الدفع' : 'Payment Method'}</span>
-                  <span>{order.paymentMethod === 'WALLET' ? (locale === 'ar' ? 'المحفظة' : 'Wallet') : (locale === 'ar' ? 'عند الاستلام' : 'Cash on Delivery')}</span>
+                  <span>
+                    {order.paymentMethod === 'WALLET'
+                      ? (locale === 'ar' ? 'المحفظة' : 'Wallet')
+                      : (locale === 'ar' ? 'عند الاستلام' : 'Cash on Delivery')}
+                  </span>
                 </div>
+
                 {(order as any).discountAmount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>{locale === 'ar' ? 'الخصم' : 'Discount'}</span>
-                    <span>- {formatPrice((order as any).discountAmount)}</span>
+                    <span>- {formatPrice(Number((order as any).discountAmount))}</span>
                   </div>
                 )}
+
                 <div className="flex justify-between font-black text-base pt-2 border-t border-border">
                   <span>{locale === 'ar' ? 'الإجمالي' : 'Total'}</span>
-                  <span className="text-primary">{formatPrice(order.totalAmount)}</span>
+                  <span className="text-primary">{formatPrice(Number(order.totalAmount))}</span>
                 </div>
               </div>
             </div>
