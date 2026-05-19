@@ -13,7 +13,7 @@ interface Category { id: string; nameAr: string; nameEn: string; }
 const emptyForm = {
   nameAr: '', nameEn: '', descriptionAr: '', descriptionEn: '',
   price: '', discountPrice: '', stock: '0', categoryId: '',
-  brand: '', isFeatured: false, images: [] as string[],
+  brand: '', isFeatured: false, thumbnail: '',
 };
 
 export default function AdminProducts() {
@@ -47,8 +47,7 @@ export default function AdminProducts() {
       categoryId: form.categoryId,
       brand: form.brand.trim() || undefined,
       isFeatured: form.isFeatured,
-      images: form.images,
-thumbnail: form.images?.[0] || '',
+      thumbnail: form.thumbnail || undefined,
       images: form.thumbnail ? [form.thumbnail] : [],
     }),
     onSuccess: () => {
@@ -82,10 +81,7 @@ thumbnail: form.images?.[0] || '',
         try {
           const base64 = e.target?.result as string;
           const res = await api.post<{ url: string }>('/upload', { base64, folder: 'laptopstore/products' });
-       setForm(p => ({
-  ...p,
-  images: [...(p.images || []), res.url]
-}));;
+          setForm(p => ({ ...p, thumbnail: res.url }));
           toast.success(locale === 'ar' ? 'تم رفع الصورة' : 'Image uploaded');
         } catch (err: any) {
           toast.error(err.message || (locale === 'ar' ? 'فشل رفع الصورة' : 'Upload failed'));
@@ -209,8 +205,8 @@ thumbnail: form.images?.[0] || '',
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
-              <h2 className="font-bold text-lg">{locale === 'ar' ? 'إضافة منتج جديد' : 'Add New Product'}</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent">
+              <h2 className="font-bollick=d text-lg">{locale === 'ar' ? 'إضافة منتج جديد' : 'Add New Product'}</h2>
+              <button onC{() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -219,18 +215,9 @@ thumbnail: form.images?.[0] || '',
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-2 block">{locale === 'ar' ? 'صورة المنتج' : 'Product Image'}</label>
                 <div className="flex items-center gap-4">
-                  {form.images?.length > 0 ? (
-  <div className="flex gap-2 flex-wrap">
-    {form.images.map((img, i) => (
-      <img
-        key={i}
-        src={img}
-        alt="preview"
-        className="w-20 h-20 rounded-xl object-cover border border-border"
-      />
-    ))}
-  </div>
-) : (
+                  {form.thumbnail ? (
+                    <img src={form.thumbnail} alt="preview" className="w-20 h-20 rounded-xl object-cover border border-border" />
+                  ) : (
                     <div className="w-20 h-20 rounded-xl bg-muted border border-dashed border-border flex items-center justify-center">
                       <Package className="w-8 h-8 text-muted-foreground/40" />
                     </div>
