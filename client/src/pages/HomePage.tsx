@@ -35,69 +35,10 @@ export default function HomePage() {
     <div className="min-h-screen">
       <Navbar />
       <main>
-        {/* Hero */}
-        <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950">
-          <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-          <div className="container mx-auto px-4 py-20 grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div initial={{ opacity: 0, x: isRTL ? 40 : -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="space-y-8">
-              <span className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-semibold">
-                <Zap className="w-4 h-4" />
-                {locale === 'ar' ? 'التكنولوجيا الأفضل' : 'Best Technology'}
-              </span>
-              <h1 className="text-4xl lg:text-6xl font-black text-foreground leading-tight">
-                {locale === 'ar' ? (
-                  <>اكتشف عالم <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">اللابتوبات</span></>
-                ) : (
-                  <>Discover the World of <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">Laptops</span></>
-                )}
-              </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-                {locale === 'ar'
-                  ? 'أحدث الموديلات بأفضل الأسعار. جودة مضمونة، وشحن سريع إلى باب منزلك.'
-                  : 'Latest models at the best prices. Guaranteed quality, fast shipping to your door.'}
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/products" className="flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-lg hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5">
-                  <ShoppingBag className="w-5 h-5" />
-                  {locale === 'ar' ? 'تسوق الآن' : 'Shop Now'}
-                </Link>
-                <Link href="/products?offers=true" className="flex items-center gap-2 px-8 py-4 bg-card border border-border text-foreground rounded-2xl font-bold text-lg hover:bg-accent transition-all hover:-translate-y-0.5">
-                  {locale === 'ar' ? 'استكشف العروض' : 'Explore Offers'}
-                  <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
-                </Link>
-              </div>
-              <div className="flex items-center gap-6 pt-4">
-                {features.map(({ icon: Icon, titleAr, titleEn, descAr, descEn }) => (
-                  <div key={titleEn} className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-foreground">{locale === 'ar' ? titleAr : titleEn}</p>
-                      <p className="text-xs text-muted-foreground">{locale === 'ar' ? descAr : descEn}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, x: isRTL ? -40 : 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden lg:flex items-center justify-center">
-              <div className="relative w-96 h-80 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 rounded-3xl flex items-center justify-center border border-border">
-                <div className="text-center space-y-4">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-400 rounded-3xl flex items-center justify-center shadow-2xl mx-auto">
-                    <ShoppingBag className="w-12 h-12 text-white" />
-                  </div>
-                  <div className="flex items-center gap-1 justify-center">
-                    {[1,2,3,4,5].map(s => <Star key={s} className="w-5 h-5 text-amber-400 fill-amber-400" />)}
-                  </div>
-                  <p className="text-sm font-semibold text-muted-foreground">
-                    {locale === 'ar' ? '+500 منتج متاح' : '500+ Products Available'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
+        <HeroSection
+  banners={data?.banners}
+  locale={locale}
+/>
 
         {/* Categories */}
         {data?.categories && data.categories.length > 0 && (
