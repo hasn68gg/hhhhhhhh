@@ -98,7 +98,7 @@ export default function HomePage() {
               </div>
             </motion.div>
           </div>
-        </section
+        </section>
         {/* Categories */}
         {data?.categories && data.categories.length > 0 && (
           <section className="container mx-auto px-4 py-12">
