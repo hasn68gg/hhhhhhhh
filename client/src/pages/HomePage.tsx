@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
+import HeroSection from '../components/HeroSection';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Zap, Star, ArrowRight, Shield, Truck, HeadphonesIcon } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
