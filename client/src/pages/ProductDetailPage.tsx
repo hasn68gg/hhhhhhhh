@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
@@ -82,7 +81,7 @@ export default function ProductDetailClient({ product, related, locale }: Produc
           <div className="relative aspect-square bg-secondary/30 rounded-3xl overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div key={selectedImage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0">
-                <Image src={images[selectedImage] || 'https://via.placeholder.com/600'} alt={name} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+                <img src={images[selectedImage] || 'https://via.placeholder.com/600'} alt={name} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
               </motion.div>
             </AnimatePresence>
             {discountPercent > 0 && (
@@ -103,7 +102,7 @@ export default function ProductDetailClient({ product, related, locale }: Produc
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {images.map((img, i) => (
                 <button key={i} onClick={() => setSelectedImage(i)} className={cn('w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all', i === selectedImage ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100')}>
-                  <Image src={img} alt="" width={64} height={64} className="object-cover w-full h-full" />
+                  <img src={img} alt="" className="object-cover w-full h-full" />
                 </button>
               ))}
             </div>
