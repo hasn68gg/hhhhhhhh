@@ -36,7 +36,7 @@ export default function ProductDetailPage() {
  const { data: product, isLoading, isError } = useQuery({
   queryKey: ['product', params.id],
   queryFn: async () => {
-    const res = await api.get(/products/${params.id});
+    const res = await api.get(`/products/${params.id}`);
     return res.data.product;
   },
 });
