@@ -18,7 +18,7 @@ router.get("/home", async (req, res) => {
       db.select().from(products).leftJoin(categories, eq(products.categoryId, categories.id))
         .where(and(eq(products.isFeatured, true), eq(products.isActive, true)))
         .orderBy(desc(products.createdAt)).limit(8),
-      db.select().from(categories).where(sql1`=1`).orderBy(categories.sortOrder),
+      db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder),
       db.select().from(products).leftJoin(categories, eq(products.categoryId, categories.id))
         .where(and(isNotNull(products.discountPrice), eq(products.isActive, true)))
         .orderBy(desc(products.createdAt)).limit(6),
