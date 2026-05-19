@@ -43,6 +43,7 @@ const features = [
 ];
 
 export default function HeroSection({ banners, locale }: HeroSectionProps) {
+  console.log("HERO WORKING");
   console.log("BANNERS =", banners);
   const isRTL = locale === 'ar';
   const [current, setCurrent] = useState(0);
