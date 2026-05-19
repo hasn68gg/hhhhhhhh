@@ -206,7 +206,7 @@ export default function AdminProducts() {
           <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
               <h2 className="font-bollick=d text-lg">{locale === 'ar' ? 'إضافة منتج جديد' : 'Add New Product'}</h2>
-              <button onC{() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent">
+              <button onClick={() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent">
                 <X className="w-4 h-4" />
               </button>
             </div>
