@@ -33,11 +33,13 @@ export default function ProductDetailPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
 
-  const { data: product, isLoading } = useQuery<ProductDetail>({
-    queryKey: ['product', params.id],
-    queryFn: () => api.get<ProductDetail>(`/products/${params.id}`),
-  });
-
+  const { data: product, isLoading } = useQuery({
+  queryKey: ['product', params.id],
+  queryFn: async () => {
+    const res = await api.get(/products/${params.id});
+    return res.data.product; // 🔥 أهم تعديل
+  },
+});
   const reviewMutation = useMutation({
     mutationFn: () => api.post(`/products/${params.id}/reviews`, { rating, comment }),
     onSuccess: () => {
@@ -71,17 +73,28 @@ export default function ProductDetailPage() {
   const images = product.images?.length ? product.images : ['https://via.placeholder.com/600x600?text=No+Image'];
   const isWishlisted = inWishlist(product.id);
 
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id, name,
-      price: product.price,
-      discountPrice: product.discountPrice ?? undefined,
-      image: images[0],
-      quantity: qty,
-      stock: product.stock,
-    });
-    toast.success(locale === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart');
-  };
+ const handleAddToCart = () => {
+  if (Number(product.stock) <= 0) {
+    toast.error(locale === 'ar' ? 'المنتج غير متوفر' : 'Out of stock');
+    return;
+  }
+
+  addToCart({
+    id: product.id,
+    name: product.nameEn,
+    price: product.price,
+    discountPrice: product.discountPrice ?? undefined,
+    image: product.images?.[0],
+    quantity: qty,
+    stock: product.stock,
+  });
+
+  toast.success(
+    locale === 'ar'
+      ? 'تمت الإضافة إلى السلة'
+      : 'Added to cart'
+  );
+};
 
   return (
     <div className="min-h-screen">
