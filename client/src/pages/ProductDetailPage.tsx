@@ -33,13 +33,14 @@ export default function ProductDetailPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
 
-  const { data: product, isLoading } = useQuery({
+ const { data: product, isLoading, isError } = useQuery({
   queryKey: ['product', params.id],
   queryFn: async () => {
-    const res = await api.get(`/products/${params.id}`);
-    return res.data.product; // 🔥 أهم تعديل
+    const res = await api.get(/products/${params.id});
+    return res.data.product;
   },
 });
+  
   const reviewMutation = useMutation({
     mutationFn: () => api.post(`/products/${params.id}/reviews`, { rating, comment }),
     onSuccess: () => {
@@ -95,7 +96,7 @@ export default function ProductDetailPage() {
       : 'Added to cart'
   );
 };
-
+if (!product) return <div>Product not found</div>;
   return (
     <div className="min-h-screen">
       <Navbar />
