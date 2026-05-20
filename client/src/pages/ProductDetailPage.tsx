@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
@@ -19,6 +19,34 @@ interface ProductDetail extends Product {
   related?: Product[];
 }
 
+const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/600x600?text=No+Image';
+
+function normalizeProductImages(images: unknown, thumbnail?: string | null): string[] {
+  let list: string[] = [];
+
+  if (Array.isArray(images)) {
+    list = images.filter((img): img is string => typeof img === 'string' && img.trim().length > 0);
+  } else if (typeof images === 'string') {
+    const value = images.trim();
+    if (value) {
+      if (value.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(value);
+          if (Array.isArray(parsed)) {
+            list = parsed.filter((img): img is string => typeof img === 'string' && img.trim().length > 0);
+          }
+        } catch {
+          /* treat as single URL below */
+        }
+      }
+      if (!list.length) list = [value];
+    }
+  }
+
+  if (!list.length && thumbnail?.trim()) list = [thumbnail.trim()];
+  return list.length ? list : [PLACEHOLDER_IMAGE];
+}
+
 export default function ProductDetailPage() {
   const { locale, isRTL } = useLocale();
   const params = useParams<{ id: string }>();
@@ -30,6 +58,10 @@ export default function ProductDetailPage() {
 
   const [qty, setQty] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+
+  useEffect(() => {
+    setSelectedImage(0);
+  }, [params.id]);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
 
@@ -72,11 +104,8 @@ export default function ProductDetailPage() {
   const specs = locale === 'ar' ? product.specsAr : product.specsEn;
   const effectivePrice = product.discountPrice ?? product.price;
   const discountPercent = product.discountPrice ? getDiscountPercent(product.price, product.discountPrice) : 0;
-  const images = product.images?.length
-    ? product.images
-    : product.thumbnail
-      ? [product.thumbnail]
-      : ['https://via.placeholder.com/600x600?text=No+Image'];
+  const images = normalizeProductImages(product.images, product.thumbnail);
+  const activeImage = images[Math.min(selectedImage, images.length - 1)] ?? images[0];
   const isWishlisted = inWishlist(product.id);
 
   const handleAddToCart = () => {
@@ -84,7 +113,7 @@ export default function ProductDetailPage() {
       id: product.id, name,
       price: product.price,
       discountPrice: product.discountPrice ?? undefined,
-      image: images[0],
+      image: activeImage,
       quantity: qty,
       stock: product.stock,
     });
@@ -104,7 +133,7 @@ export default function ProductDetailPage() {
           {/* Images */}
           <div className="space-y-4">
             <div className="aspect-square rounded-2xl overflow-hidden border border-border bg-secondary/20">
-              <img src={images[selectedImage]} alt={name} className="w-full h-full object-contain" />
+              <img src={activeImage} alt={name} className="w-full h-full object-contain" />
             </div>
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto">
