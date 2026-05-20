@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart, Heart, Search, Menu, X,
   Sun, Moon, Globe, User, LogOut, Package, Wallet, Settings,
-  ChevronDown, Laptop
+  ChevronDown,
 } from 'lucide-react';
 import { useCartStore } from '../../lib/store';
+import SiteBrand from './SiteBrand';
 import { useAuth } from '../../context/AuthContext';
 import { useLocale } from '../../context/LocaleContext';
 import { useMessages } from '../../lib/i18n';
@@ -60,10 +61,7 @@ export default function Navbar() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-400 rounded-xl flex items-center justify-center shadow-lg">
-                <Laptop className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent hidden sm:block">LaptopStore</span>
+              <SiteBrand size="md" nameClassName="text-xl hidden sm:block" />
             </Link>
 
             <div className="hidden lg:flex items-center gap-1">
