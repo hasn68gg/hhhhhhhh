@@ -6,6 +6,16 @@ import AdminLayout from './AdminLayout';
 import { useLocale } from '../../context/LocaleContext';
 import api from '../../lib/api';
 
+function normalizeSettings(raw: Record<string, string | null | undefined>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(raw)) {
+    out[key] = value == null ? '' : String(value);
+  }
+  if (out.logo && !out.siteLogo) out.siteLogo = out.logo;
+  if (out.siteLogo && !out.logo) out.logo = out.siteLogo;
+  return out;
+}
+
 export default function AdminSettings() {
   const { locale } = useLocale();
   const qc = useQueryClient();
@@ -19,14 +29,17 @@ export default function AdminSettings() {
   });
 
   useEffect(() => {
-    if (data?.settings) setSettings(data.settings);
+    if (data?.settings) setSettings(normalizeSettings(data.settings));
   }, [data]);
 
   const saveMutation = useMutation({
-    mutationFn: (payload: Record<string, string>) => api.put('/admin/settings', payload),
-    onSuccess: () => {
+    mutationFn: (payload: Record<string, string>) =>
+      api.put<{ success: boolean; settings: Record<string, string> }>('/admin/settings', payload),
+    onSuccess: (res, payload) => {
+      const saved = normalizeSettings(res.settings ?? payload);
+      setSettings(saved);
+      qc.setQueryData(['admin-settings'], { settings: saved });
       toast.success(locale === 'ar' ? 'تم حفظ الإعدادات بنجاح' : 'Settings saved successfully');
-      qc.invalidateQueries({ queryKey: ['admin-settings'] });
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -41,15 +54,14 @@ export default function AdminSettings() {
       reader.onload = async (e) => {
         try {
           const base64 = e.target?.result as string;
-          const res = await api.post<{ url: string }>('/upload', {
-            base64, filename: file.name, mimeType: file.type,
+          const res = await api.post<{ url?: string }>('/upload', {
+            base64, folder: 'laptopstore/settings',
           });
+          if (!res.url) throw new Error(locale === 'ar' ? 'لم يتم استلام رابط الشعار' : 'Logo URL missing from upload');
           update('siteLogo', res.url);
           toast.success(locale === 'ar' ? 'تم رفع الشعار' : 'Logo uploaded');
         } catch (err: any) {
-          // Fallback: use base64 data URL directly
-          update('siteLogo', e.target?.result as string);
-          toast.success(locale === 'ar' ? 'تم تحديث الشعار' : 'Logo updated');
+          toast.error(err.message || (locale === 'ar' ? 'فشل رفع الشعار' : 'Failed to upload logo'));
         } finally {
           setUploadingLogo(false);
         }
@@ -93,7 +105,7 @@ export default function AdminSettings() {
       <div className="max-w-2xl space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-black text-foreground">{locale === 'ar' ? 'إعدادات الموقع' : 'Site Settings'}</h1>
-          <button onClick={() => saveMutation.mutate(settings)} disabled={saveMutation.isPending}
+          <button onClick={() => saveMutation.mutate(normalizeSettings(settings))} disabled={saveMutation.isPending || uploadingLogo}
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-60 shadow-lg shadow-primary/20">
             {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {locale === 'ar' ? 'حفظ الإعدادات' : 'Save Settings'}
@@ -166,7 +178,7 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        <button onClick={() => saveMutation.mutate(settings)} disabled={saveMutation.isPending}
+        <button onClick={() => saveMutation.mutate(normalizeSettings(settings))} disabled={saveMutation.isPending || uploadingLogo}
           className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-primary-foreground rounded-2xl font-bold hover:bg-primary/90 transition-all disabled:opacity-60 shadow-xl shadow-primary/20">
           {saveMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           {locale === 'ar' ? 'حفظ جميع الإعدادات' : 'Save All Settings'}
