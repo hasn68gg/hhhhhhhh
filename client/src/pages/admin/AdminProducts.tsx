@@ -48,8 +48,7 @@ export default function AdminProducts() {
       brand: form.brand.trim() || undefined,
       isFeatured: form.isFeatured,
       images: form.images,
-thumbnail: form.images?.[0] || '',
-      images: form.thumbnail ? [form.thumbnail] : [],
+      thumbnail: form.images?.[0] || null,
     }),
     onSuccess: () => {
       toast.success(locale === 'ar' ? 'تم إضافة المنتج بنجاح' : 'Product added successfully');
@@ -247,8 +246,8 @@ thumbnail: form.images?.[0] || '',
                     </button>
                     <input ref={imgRef} type="file" accept="image/*" className="hidden"
                       onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                    {form.thumbnail && (
-                      <button onClick={() => setForm(p => ({ ...p, thumbnail: '' }))} className="mt-1.5 text-xs text-red-500 hover:underline block">
+                    {form.images?.length > 0 && (
+                      <button onClick={() => setForm(p => ({ ...p, images: [] }))} className="mt-1.5 text-xs text-red-500 hover:underline block">
                         {locale === 'ar' ? 'إزالة الصورة' : 'Remove image'}
                       </button>
                     )}
