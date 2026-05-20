@@ -1,10 +1,13 @@
 import { Link } from 'wouter';
-import { Laptop, Facebook, Instagram, Twitter, MessageCircle, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Twitter, MessageCircle, Mail, Phone, MapPin } from 'lucide-react';
 import { useLocale } from '../../context/LocaleContext';
 import { useMessages } from '../../lib/i18n';
+import { useSiteSettings } from '../../context/SiteSettingsContext';
+import SiteBrand from './SiteBrand';
 
 export default function Footer() {
   const { locale } = useLocale();
+  const { siteName } = useSiteSettings();
   const t = useMessages(locale, 'footer');
   const nt = useMessages(locale, 'nav');
 
@@ -21,10 +24,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-400 rounded-xl flex items-center justify-center shadow-lg">
-                <Laptop className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-black bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">LaptopStore</span>
+              <SiteBrand size="lg" nameClassName="text-xl" />
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
               {locale === 'ar' ? 'أفضل متجر للابتوبات في المنطقة. جودة عالية، أسعار منافسة، وخدمة عملاء متميزة.' : 'The best laptop store in the region. High quality, competitive prices, and excellent customer service.'}
@@ -94,7 +94,7 @@ export default function Footer() {
 
         <div className="border-t border-border mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2026 LaptopStore. {locale === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
+            © 2026 {siteName}. {locale === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
           </p>
           <div className="flex items-center gap-4">
             {[
