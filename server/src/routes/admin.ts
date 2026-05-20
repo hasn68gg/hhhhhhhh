@@ -162,12 +162,20 @@ router.delete("/admin/products/:id", ...adminAuth, async (req, res) => {
   }
 });
 
+function buildSettingsMap(rows: { key: string; value: string | null }[]) {
+  const map: Record<string, string> = {};
+  for (const row of rows) {
+    map[row.key] = row.value ?? "";
+  }
+  if (map.logo && !map.siteLogo) map.siteLogo = map.logo;
+  if (map.siteLogo && !map.logo) map.logo = map.siteLogo;
+  return map;
+}
+
 router.get("/admin/settings", ...adminAuth, async (req, res) => {
   try {
     const settings = await db.select().from(siteSettings);
-    const map: Record<string, string | null> = {};
-    settings.forEach(s => { map[s.key] = s.value; });
-    res.json({ settings: map });
+    res.json({ settings: buildSettingsMap(settings) });
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Server error" });
@@ -259,15 +267,28 @@ router.post("/admin/orders/:id/message", ...adminAuth, async (req, res) => {
 
 router.put("/admin/settings", ...adminAuth, async (req, res) => {
   try {
-    for (const [key, value] of Object.entries(req.body)) {
+    const body = req.body as Record<string, unknown>;
+    for (const [key, value] of Object.entries(body)) {
+      if (value === undefined || typeof value === "object") continue;
+      const stored = value === null ? "" : String(value);
       const existing = await db.select().from(siteSettings).where(eq(siteSettings.key, key)).limit(1);
       if (existing[0]) {
-        await db.update(siteSettings).set({ value: String(value), updatedAt: new Date() }).where(eq(siteSettings.key, key));
+        await db.update(siteSettings).set({ value: stored, updatedAt: new Date() }).where(eq(siteSettings.key, key));
       } else {
-        await db.insert(siteSettings).values({ key, value: String(value) });
+        await db.insert(siteSettings).values({ key, value: stored });
       }
     }
-    res.json({ success: true });
+    if (typeof body.siteLogo === "string") {
+      const logoValue = body.siteLogo;
+      const logoRow = await db.select().from(siteSettings).where(eq(siteSettings.key, "logo")).limit(1);
+      if (logoRow[0]) {
+        await db.update(siteSettings).set({ value: logoValue, updatedAt: new Date() }).where(eq(siteSettings.key, "logo"));
+      } else {
+        await db.insert(siteSettings).values({ key: "logo", value: logoValue });
+      }
+    }
+    const rows = await db.select().from(siteSettings);
+    res.json({ success: true, settings: buildSettingsMap(rows) });
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Server error" });
