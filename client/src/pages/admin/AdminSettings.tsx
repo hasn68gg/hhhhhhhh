@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import AdminLayout from './AdminLayout';
 import { useLocale } from '../../context/LocaleContext';
 import api from '../../lib/api';
+import { SITE_SETTINGS_QUERY_KEY } from '../../context/SiteSettingsContext';
 
 function normalizeSettings(raw: Record<string, string | null | undefined>): Record<string, string> {
   const out: Record<string, string> = {};
@@ -39,6 +40,7 @@ export default function AdminSettings() {
       const saved = normalizeSettings(res.settings ?? payload);
       setSettings(saved);
       qc.setQueryData(['admin-settings'], { settings: saved });
+      qc.invalidateQueries({ queryKey: SITE_SETTINGS_QUERY_KEY });
       toast.success(locale === 'ar' ? 'تم حفظ الإعدادات بنجاح' : 'Settings saved successfully');
     },
     onError: (err: Error) => toast.error(err.message),
