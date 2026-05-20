@@ -32,7 +32,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       name,
       price: product.price,
       discountPrice: product.discountPrice ?? undefined,
-      image: product.thumbnail || product.images[0] || 'https://via.placeholder.com/400x400?text=No+Image',
+      image: product.images?.[0] || product.thumbnail || 'https://via.placeholder.com/400x400?text=No+Image',
       quantity: 1,
       stock: product.stock,
     });
@@ -48,8 +48,8 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     );
   };
 
-  const thumbnail = !imageError && (product.thumbnail || product.images[0])
-    ? (product.thumbnail || product.images[0])
+  const thumbnail = !imageError && (product.images?.[0] || product.thumbnail)
+    ? (product.images?.[0] || product.thumbnail)
     : 'https://via.placeholder.com/400x400?text=No+Image';
 
   return (
