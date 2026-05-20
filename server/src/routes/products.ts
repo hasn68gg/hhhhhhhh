@@ -77,7 +77,12 @@ router.get("/products/:id", optionalAuth, async (req, res) => {
       .where(eq(reviews.productId, row.products.id));
     const approvedRevs = revs.filter(r => r.isApproved);
 
-    res.json({ product: enrichProduct({ ...row.products, category: row.categories }, approvedRevs) });
+    res.json({
+      product: {
+        ...enrichProduct({ ...row.products, category: row.categories }, approvedRevs),
+        reviews: approvedRevs,
+      },
+    });
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Server error" });
