@@ -1,7 +1,23 @@
 import { Router } from "express";
-import { db, eq, desc, isNotNull, and, sql, products, categories, banners, reviews } from "../db";
+import { db, eq, desc, isNotNull, and, sql, products, categories, banners, reviews, siteSettings } from "../db";
 
 const router = Router();
+
+router.get("/settings", async (req, res) => {
+  try {
+    const rows = await db.select().from(siteSettings);
+    const map: Record<string, string> = {};
+    for (const row of rows) {
+      map[row.key] = row.value ?? "";
+    }
+    if (map.logo && !map.siteLogo) map.siteLogo = map.logo;
+    if (map.siteLogo && !map.logo) map.logo = map.siteLogo;
+    res.json({ settings: map });
+  } catch (err) {
+    req.log.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 function enrichProducts(prods: any[], allRevs: any[]) {
   return prods.map(p => {
