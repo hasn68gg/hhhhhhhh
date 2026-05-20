@@ -35,11 +35,15 @@ export default function ProductDetailPage() {
 
   const { data: product, isLoading } = useQuery<ProductDetail>({
     queryKey: ['product', params.id],
-    queryFn: () => api.get<ProductDetail>(`/products/${params.id}`),
+    enabled: !!params.id,
+    queryFn: async () => {
+      const res = await api.get<{ product: ProductDetail }>(`/products/${params.id}`);
+      return res.product;
+    },
   });
 
   const reviewMutation = useMutation({
-    mutationFn: () => api.post(`/products/${params.id}/reviews`, { rating, comment }),
+    mutationFn: (productId: string) => api.post(`/products/${productId}/reviews`, { rating, comment }),
     onSuccess: () => {
       toast.success(locale === 'ar' ? 'تم إضافة تقييمك' : 'Review added');
       qc.invalidateQueries({ queryKey: ['product', params.id] });
@@ -194,13 +198,13 @@ export default function ProductDetailPage() {
               <textarea value={comment} onChange={e => setComment(e.target.value)} rows={3}
                 placeholder={locale === 'ar' ? 'اكتب تقييمك هنا...' : 'Write your review...'}
                 className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
-              <button onClick={() => reviewMutation.mutate()} disabled={reviewMutation.isPending}
+              <button onClick={() => reviewMutation.mutate(product.id)} disabled={reviewMutation.isPending}
                 className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-50">
                 {reviewMutation.isPending ? (locale === 'ar' ? 'جاري الإرسال...' : 'Submitting...') : (locale === 'ar' ? 'إرسال التقييم' : 'Submit Review')}
               </button>
             </div>
           )}
-          {product.reviews?.length === 0 ? (
+          {!product.reviews?.length ? (
             <p className="text-muted-foreground text-center py-8">{locale === 'ar' ? 'لا توجد تقييمات بعد' : 'No reviews yet'}</p>
           ) : (
             <div className="space-y-4">
