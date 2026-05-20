@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
-import { LayoutDashboard, Package, ShoppingCart, Users, Image, Settings, Wallet, MessageSquare, LogOut, Laptop, Menu, X, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Image, Settings, Wallet, MessageSquare, LogOut, Menu, X, FolderOpen } from 'lucide-react';
+import SiteBrand from '../../components/layout/SiteBrand';
 import { useState } from 'react';
 import { useLocale } from '../../context/LocaleContext';
 import { useAuth } from '../../context/AuthContext';
@@ -39,10 +40,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <div className="w-64 bg-card border-e border-border flex flex-col h-full">
       <div className="p-5 border-b border-border">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-400 rounded-xl flex items-center justify-center">
-            <Laptop className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-black text-sm bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">LaptopStore</span>
+          <SiteBrand size="sm" nameClassName="text-sm" />
         </Link>
         <p className="text-xs text-muted-foreground mt-1">{locale === 'ar' ? 'لوحة الإدارة' : 'Admin Panel'}</p>
       </div>
