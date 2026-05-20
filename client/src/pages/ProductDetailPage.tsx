@@ -72,7 +72,11 @@ export default function ProductDetailPage() {
   const specs = locale === 'ar' ? product.specsAr : product.specsEn;
   const effectivePrice = product.discountPrice ?? product.price;
   const discountPercent = product.discountPrice ? getDiscountPercent(product.price, product.discountPrice) : 0;
-  const images = product.images?.length ? product.images : ['https://via.placeholder.com/600x600?text=No+Image'];
+  const images = product.images?.length
+    ? product.images
+    : product.thumbnail
+      ? [product.thumbnail]
+      : ['https://via.placeholder.com/600x600?text=No+Image'];
   const isWishlisted = inWishlist(product.id);
 
   const handleAddToCart = () => {
