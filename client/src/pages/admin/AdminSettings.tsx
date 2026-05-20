@@ -23,7 +23,7 @@ export default function AdminSettings() {
   }, [data]);
 
   const saveMutation = useMutation({
-    mutationFn: () => api.put('/admin/settings', settings),
+    mutationFn: (payload: Record<string, string>) => api.put('/admin/settings', payload),
     onSuccess: () => {
       toast.success(locale === 'ar' ? 'تم حفظ الإعدادات بنجاح' : 'Settings saved successfully');
       qc.invalidateQueries({ queryKey: ['admin-settings'] });
@@ -93,7 +93,7 @@ export default function AdminSettings() {
       <div className="max-w-2xl space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-black text-foreground">{locale === 'ar' ? 'إعدادات الموقع' : 'Site Settings'}</h1>
-          <button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}
+          <button onClick={() => saveMutation.mutate(settings)} disabled={saveMutation.isPending}
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-60 shadow-lg shadow-primary/20">
             {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {locale === 'ar' ? 'حفظ الإعدادات' : 'Save Settings'}
@@ -166,7 +166,7 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        <button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}
+        <button onClick={() => saveMutation.mutate(settings)} disabled={saveMutation.isPending}
           className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-primary-foreground rounded-2xl font-bold hover:bg-primary/90 transition-all disabled:opacity-60 shadow-xl shadow-primary/20">
           {saveMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           {locale === 'ar' ? 'حفظ جميع الإعدادات' : 'Save All Settings'}
