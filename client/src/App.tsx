@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LocaleProvider, useLocale } from './context/LocaleContext';
+import { SiteSettingsProvider } from './context/SiteSettingsContext';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -78,14 +79,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
-        <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-            <AppToaster />
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-              <AppRoutes />
-            </WouterRouter>
-          </ThemeProvider>
-        </AuthProvider>
+        <SiteSettingsProvider>
+          <AuthProvider>
+            <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+              <AppToaster />
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+                <AppRoutes />
+              </WouterRouter>
+            </ThemeProvider>
+          </AuthProvider>
+        </SiteSettingsProvider>
       </LocaleProvider>
     </QueryClientProvider>
   );
