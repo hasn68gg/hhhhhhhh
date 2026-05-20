@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Send, Loader2, MessageCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { formatDate } from '../../lib/utils';
 import { cn } from '../../lib/utils';
+import { useSiteSettings } from '../../context/SiteSettingsContext';
 
 interface Message {
   id: string;
@@ -18,6 +19,7 @@ interface Conversation {
 }
 
 export default function ChatWindow({ locale }: { locale: string }) {
+  const { siteName } = useSiteSettings();
   const isRTL = locale === 'ar';
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [message, setMessage] = useState('');
@@ -144,7 +146,11 @@ export default function ChatWindow({ locale }: { locale: string }) {
           <MessageCircle className="w-5 h-5 text-white" />
         </div>
         <div>
-          <p className="font-bold text-white text-sm">{isRTL ? 'دعم LaptopStore' : 'LaptopStore Support'}</p>
+          <p className="font-bold text-white text-sm">
+            {siteName
+              ? (isRTL ? `دعم ${siteName}` : `${siteName} Support`)
+              : (isRTL ? 'دعم العملاء' : 'Customer Support')}
+          </p>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <p className="text-white/70 text-xs">{isRTL ? 'متصل' : 'Online'}</p>
