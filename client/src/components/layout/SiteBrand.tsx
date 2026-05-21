@@ -47,4 +47,3 @@ export default function SiteBrand({ size = 'md', showName = true, nameClassName 
     </>
   );
 }
-v
