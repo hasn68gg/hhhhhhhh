@@ -17,6 +17,11 @@ function generateToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
+async function isOtpEnabled(): Promise<boolean> {
+  const otpSetting = await db.select().from(siteSettings).where(eq(siteSettings.key, "otpEnabled")).limit(1);
+  return otpSetting[0]?.value === "true";
+}
+
 router.post("/auth/register", async (req, res) => {
   try {
     const { email, lang = "ar" } = req.body;
@@ -33,29 +38,24 @@ router.post("/auth/register", async (req, res) => {
       await db.insert(users).values({ email: normalizedEmail });
     }
 
-    await db.delete(otpCodes).where(eq(otpCodes.email, normalizedEmail));
-
-    const otp = generateOTP(6);
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    await db.insert(otpCodes).values({ email: normalizedEmail, code: otp, expiresAt });
-
-    // Check if email sending is enabled from settings
-    const otpSetting = await db.select().from(siteSettings).where(eq(siteSettings.key, "otpEnabled")).limit(1);
-    const otpEnabled = otpSetting[0]?.value !== "false";
+    const otpEnabled = await isOtpEnabled();
 
     if (otpEnabled) {
+      await db.delete(otpCodes).where(eq(otpCodes.email, normalizedEmail));
+
+      const otp = generateOTP(6);
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      await db.insert(otpCodes).values({ email: normalizedEmail, code: otp, expiresAt });
+
       try {
         await sendOTPEmail(normalizedEmail, otp, lang);
         req.log.info({ email: normalizedEmail }, "OTP email sent successfully");
       } catch (emailErr) {
         req.log.error({ err: emailErr, email: normalizedEmail, otp }, "Failed to send OTP email - OTP logged for dev");
-        // Don't fail the request, just log it
       }
-    } else {
-      req.log.info({ email: normalizedEmail, otp }, "OTP sending disabled - logged for dev");
     }
 
-    res.json({ success: true, otpRequired: true });
+    res.json({ success: true, otpRequired: otpEnabled });
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Server error" });
@@ -66,7 +66,7 @@ router.post("/auth/verify-otp", async (req, res) => {
   try {
     const { email, otp, password, confirmPassword, name, phone, lang = "ar" } = req.body;
 
-    if (!email || !otp || !password) {
+    if (!email || !password) {
       res.status(400).json({ error: lang === "ar" ? "جميع الحقول مطلوبة" : "All fields required" }); return;
     }
 
@@ -75,17 +75,27 @@ router.post("/auth/verify-otp", async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const record = await db.select().from(otpCodes).where(
-      and(
-        eq(otpCodes.email, normalizedEmail),
-        eq(otpCodes.code, otp.trim()),
-        eq(otpCodes.used, false),
-        gt(otpCodes.expiresAt, new Date())
-      )
-    ).limit(1);
+    const otpEnabled = await isOtpEnabled();
 
-    if (!record[0]) {
-      res.status(400).json({ error: lang === "ar" ? "الكود غير صالح أو منتهي الصلاحية" : "Invalid or expired code" }); return;
+    if (otpEnabled) {
+      if (!otp) {
+        res.status(400).json({ error: lang === "ar" ? "جميع الحقول مطلوبة" : "All fields required" }); return;
+      }
+
+      const record = await db.select().from(otpCodes).where(
+        and(
+          eq(otpCodes.email, normalizedEmail),
+          eq(otpCodes.code, otp.trim()),
+          eq(otpCodes.used, false),
+          gt(otpCodes.expiresAt, new Date())
+        )
+      ).limit(1);
+
+      if (!record[0]) {
+        res.status(400).json({ error: lang === "ar" ? "الكود غير صالح أو منتهي الصلاحية" : "Invalid or expired code" }); return;
+      }
+
+      await db.update(otpCodes).set({ used: true }).where(eq(otpCodes.id, record[0].id));
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
@@ -108,8 +118,6 @@ router.post("/auth/verify-otp", async (req, res) => {
       }).returning();
       userId = newUser.id;
     }
-
-    await db.update(otpCodes).set({ used: true }).where(eq(otpCodes.id, record[0].id));
 
     const walletExists = await db.select().from(wallets).where(eq(wallets.userId, userId)).limit(1);
     if (!walletExists[0]) {
@@ -141,7 +149,8 @@ router.post("/auth/login", async (req, res) => {
       res.status(401).json({ error: "بيانات غير صحيحة" }); return;
     }
     if (user[0].isBanned) { res.status(403).json({ error: "BANNED" }); return; }
-    if (!user[0].emailVerified) { res.status(403).json({ error: "NOT_VERIFIED" }); return; }
+    const otpEnabled = await isOtpEnabled();
+    if (otpEnabled && !user[0].emailVerified) { res.status(403).json({ error: "NOT_VERIFIED" }); return; }
 
     const valid = await bcrypt.compare(password, user[0].passwordHash);
     if (!valid) { res.status(401).json({ error: "بيانات غير صحيحة" }); return; }
