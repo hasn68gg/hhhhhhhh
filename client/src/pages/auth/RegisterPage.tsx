@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const { locale } = useLocale();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [otpRequired, setOtpRequired] = useState(true);
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
@@ -21,10 +22,14 @@ export default function RegisterPage() {
   const sendOtpMutation = useMutation({
     mutationFn: () => api.post('/auth/register', { email, lang: locale }),
     onSuccess: (data: any) => {
-      if (data.otpRequired) {
-        setStep('otp');
-        toast.success(locale === 'ar' ? 'تم إرسال رمز التحقق' : 'OTP sent to your email');
-      }
+      const needsOtp = !!data.otpRequired;
+      setOtpRequired(needsOtp);
+      setStep('otp');
+      toast.success(
+        needsOtp
+          ? (locale === 'ar' ? 'تم إرسال رمز التحقق' : 'OTP sent to your email')
+          : (locale === 'ar' ? 'أكمل بيانات حسابك' : 'Complete your account details')
+      );
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -57,16 +62,18 @@ export default function RegisterPage() {
             </div>
             <button type="submit" disabled={sendOtpMutation.isPending}
               className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-60">
-              {sendOtpMutation.isPending ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (locale === 'ar' ? 'إرسال رمز التحقق' : 'Send Verification Code')}
+              {sendOtpMutation.isPending ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (locale === 'ar' ? 'متابعة' : 'Continue')}
             </button>
           </form>
         ) : (
           <form onSubmit={e => { e.preventDefault(); verifyMutation.mutate(); }} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{locale === 'ar' ? 'رمز التحقق (OTP)' : 'Verification Code (OTP)'}</label>
-              <input value={otp} onChange={e => setOtp(e.target.value)} required maxLength={6} placeholder="123456"
-                className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 tracking-widest text-center text-lg font-bold" />
-            </div>
+            {otpRequired && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">{locale === 'ar' ? 'رمز التحقق (OTP)' : 'Verification Code (OTP)'}</label>
+                <input value={otp} onChange={e => setOtp(e.target.value)} required maxLength={6} placeholder="123456"
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 tracking-widest text-center text-lg font-bold" />
+              </div>
+            )}
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{locale === 'ar' ? 'الاسم الكامل' : 'Full Name'}</label>
               <input value={name} onChange={e => setName(e.target.value)}
